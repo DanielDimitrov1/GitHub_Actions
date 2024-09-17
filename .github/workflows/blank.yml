@@ -1,0 +1,53 @@
+name: Create PR to Master
+
+on:
+  workflow_dispatch:
+    inputs:
+      ticket_number: 
+        description:  'Ticket Number {optional}'
+        required: false
+      prTitle:
+        description: 'PR Title'
+        required: true
+        
+jobs:
+  create_pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check for existing PRs to Maste from Development
+        id: check_pr
+        run: |
+          exists=$(gh pr list --base master --head development --state open --json url | jq -r '.[0].url')
+          if ["exists" != "null"]: then
+            echo "::set-output name=prExists::true"
+            echo "::set-output name=existingPrURL::$exists"
+          else
+            echo "::set-output name=prExists::false"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Create PR if it doesn't exists
+        if: steps.check_pr.outputs.prExists == 'false'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}        
+        run: |
+          ticket_number="${{ github.event.inputs.ticketNumber }}"
+          pr_title="${{ github.event.inputs.prTitle }}"
+          final_title="PROD RELEASE: "
+
+          if [-n "$ticket_number"]: then
+            final_title="${final_title}[$ticket_number]: "
+          fi
+          final_title="$(final_title)$pr_title"
+
+          gh pr create --base master --head development --title "$final_title" --body "Automatically generated PR from the create_master_pr workflow"
+
+      - name: Fail if a Master PR already exists
+        if: steps.check_pr.outputs.prExists == 'true'
+        run: |
+          echo "Error: PR already exists. Check the PR here: ${{ steps.check_pr.outputs.existsingPrURL }}"
+          exit 1
