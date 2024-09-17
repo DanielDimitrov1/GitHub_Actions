@@ -1,0 +1,53 @@
+name: Build Flow
+on:
+  push:
+    branches:
+      - '*'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Build & Deploy
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '16'
+      - id: 'auth'
+        name: 'Authenticate to AWS'
+        uses: 'aws-actions/configure-aws-credentials@v4'
+        with: 
+          create_credentials_file: 'true'
+          workload_identity_provider: '${{ secrets.AWS_PROVIDER }}'
+          service_account: '${{ secrets.AWS_PROVIDER_SA }}'
+      - name: Configure git for private modules
+        uses: private/actions-enable-private-modules@v1
+        with:
+          npm_token: ${{ secrets.NPM_TOKEN }}
+          git_bot_username: ${{ secrets.GIT_BOT_USERNAME }}
+          git_bot_token: ${{ secrets.GIT_BOT_TOKEN }}
+      - name: Restore yarn cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+          key: ${{ runner.os }}-node-${{hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-node-1
+      - name: Install dependencies
+        run: yarn install
+        env:
+          NODE_ENV: development
+      - name: Build & Deploy
+        uses: private/actions-deploy-fronend@v1
+        env:
+          NODE_OPTIONS: '--max_old_space_size=4096'
+        with:
+          AWS_KEY: '${{ steps.auth.outputs.credentials_file_path }}'
+          deploy: true
+          environemnts: 'production.staging'
