@@ -7,6 +7,7 @@ This GitHub Actions workflow, ****Build Flow****, automates the build and deploy
 **Private Module Access:** Configures access to private Git and NPM modules.  <br />
 **Caching and Installation:** Restores node_modules cache and installs dependencies.  <br />
 **Build & Deployment:** Builds the project and deploys it to the production and staging environments on AWS.  <br />
+
 This workflow enables continuous deployment with each code push, ensuring the latest changes are always live.  <br />
 
 # Create PR to Master.yaml
