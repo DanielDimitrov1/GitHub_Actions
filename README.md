@@ -2,7 +2,7 @@
 
 # Build Flow.yaml
 
-This GitHub Actions workflow, Build Flow, automates the build and deployment process for our project. It runs on every push to any branch, performing the following steps:  <br />
+This GitHub Actions workflow, ****Build Flow****, automates the build and deployment process for our project. It runs on every push to any branch, performing the following steps:  <br />
 
 **Setup:** Checks out the repository and sets up Node.js (v16).  <br />
 **AWS Authentication:** Configures AWS credentials using a workload identity provider for secure access.  <br />
