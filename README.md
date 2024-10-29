@@ -1,5 +1,3 @@
-# GitHub_Actions
-
 # Build Flow.yaml
 
 This GitHub Actions workflow, ****Build Flow****, automates the build and deployment process for our project. It runs on every push to any branch, performing the following steps:  <br />
